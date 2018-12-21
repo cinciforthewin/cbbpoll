@@ -22,11 +22,12 @@ def post_poll(poll):
     results = generate_results(poll)[0]
     text = render_template('reddit_results_post.md', results=results, teams=Team.query, poll=poll)
 
-    submission = bot.submit(app.config['REDDIT_SUB'], announcement_title(poll), text=text, save=True)
-    submission.distinguish(as_made_by='mod')
-    submission.sticky()
-    submission.approve()
-    poll.redditUrl = submission.url
+    submission = bot.subreddit(app.config['REDDIT_SUB']).submit(announcement_title(poll), selftext=text)
+    submission.save()
+    submission.mod.distinguish()
+    submission.mod.sticky()
+    submission.mod.approve()
+    poll.redditUrl = "https://www.reddit.com" + submission.permalink
     db.session.add(poll)
     db.session.commit()
 
